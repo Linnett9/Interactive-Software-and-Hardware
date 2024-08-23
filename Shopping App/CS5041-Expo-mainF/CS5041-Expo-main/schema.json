@@ -1,0 +1,54 @@
+// In every case, the "content" JSON object needs converted to a string before storage.
+
+[
+
+	// Catalogue of 'known' items. Copied to user's lists.
+	{
+		"type": "item",
+		"message": "Name of item, e.g. Milk",
+		"content": {
+			"category": "Item category, e.g. Dairy",
+			"image": "Name of Font Awesome icon for item, e.g. cow"
+		}
+	},
+
+	// Shopping list
+	{
+		"type": "list-item",
+		"message": "Name of item, e.g. Milk",
+		"content": {
+			"image": "Name of Font Awesome icon for item, e.g. cow",
+			"quantity": 3,
+			"notes": "Any other text the user enters about the item",
+			"category": "Item category, e.g. Dairy",
+			"price": 1.29,
+			"lastBought": "", // null if item 'un-ticked'. Otherwise, contains timestamp of when the item was last bought.
+			"assignedTo": "User ID whom this item is attached to"
+		}
+	},
+
+	// A person who accesses the shopping list (unimplemented)
+	{
+		"type": "user",
+		"message": "User ID, randomly generated",
+		"content": {
+			"name": "User's name, e.g. Jack Cole",
+			"email": "User's email address, e.g. cs@st-andrews.ac.uk",
+			"password": "User's password, currently unused while user authentication doesn't exist"
+		}
+	},
+
+	// Receipts to be split between users (unimplemented)
+	{
+		"type": "receipt",
+		"message": "Some name, e.g. Weekly shop",
+		"content": {
+			"date": "2023-09-01T10:00:00Z",
+			"notes": "Any other text the user enters about the item",
+			"paid": { // Each user who is splitting this receipt has their account ID in
+					  // this object
+				"userID": "boolean", // true if the user has paid, false otherwise
+			}
+		}
+	}
+]

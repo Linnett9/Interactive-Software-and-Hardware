@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #art-gallery .art-piece {
+            margin-bottom: 20px;
+        }
+        #art-gallery img {
+            width: 200px; 
+            height: auto;
+        }
+        #art-gallery button {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="art-gallery">
+    <h1>Example Art Display</h1>
+
+<div id="art-gallery">
+    <div class="art-piece" id="art-piece-1">
+        <img src="https://picsum.photos/200/300?random=1" alt="Art Piece 1">
+        <button onclick="playArtistExplanation(1)">Listen to Explanation</button>
+    </div>
+    <div class="art-piece" id="art-piece-2">
+        <img src="https://picsum.photos/200/300?random=2" alt="Art Piece 2">
+        <button onclick="playArtistExplanation(2)">Listen to Explanation</button>
+    </div>
+    <div class="art-piece" id="art-piece-3">
+        <img src="https://picsum.photos/200/300?random=3" alt="Art Piece 3">
+        <button onclick="playArtistExplanation(3)">Listen to Explanation</button>
+    </div>
+    <div class="art-piece" id="art-piece-4">
+        <img src="https://picsum.photos/200/300?random=4" alt="Art Piece 4">
+        <button onclick="playArtistExplanation(4)">Listen to Explanation</button>
+    </div>
+    <div class="art-piece" id="art-piece-5">
+        <img src="https://picsum.photos/200/300?random=5" alt="Art Piece 5">
+        <button onclick="playArtistExplanation(5)">Listen to Explanation</button>
+    </div>
+    <div class="art-piece" id="art-piece-6">
+        <img src="https://picsum.photos/200/300?random=6" alt="Art Piece 6">
+        <button onclick="playArtistExplanation(6)">Listen to Explanation</button>
+    </div>
+</div>
+
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.min.js" integrity="sha512-pgK6Wo8doipc/IPQ0ilH3b47ww01345nR9ud1/6Qp0n+lQlEW9zuw6JhysRcUpBY4yKuVZjn1MAkDxbnncuGsQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/@gohai/p5.webserial@^1/libraries/p5.webserial.js"></script>
+    <script>
+        let textData = [];
+        let serialText = "";
+        let port;
+        let connectBtn;
+
+        function setup() {
+            createCanvas(400, 400);
+            background('grey');
+
+            let textField = createInput('');
+            textField.position(30, 3000);
+            textField.size(300);
+            textField.id('text-field');
+            let postButton = createButton('post');
+            postButton.position(350, 3000);
+            postButton.id('submit-button');
+            postButton.mousePressed(sendDataToDatabase);
+
+            connectBtn = createButton('Connect to Arduino');
+            connectBtn.position(30, 3110);
+            connectBtn.mousePressed(connectBtnClick);
+            let sendHelloBtn = createButton('Send hello');
+            sendHelloBtn.position(220, 3110);
+            sendHelloBtn.mousePressed(sendHelloClick);
+
+            port = createSerial();
+            let usedPorts = usedSerialPorts();
+            if (usedPorts.length > 0) {
+                port.open(usedPorts[0], 115200);
+            }
+        }
+
+        function draw() {
+            background(0);
+            fill(255);
+            textSize(10);
+            text(`serial: ${serialText}`, 10, height - 20);
+            connectBtn.html(port.opened() ? 'Disconnect' : 'Connect to Arduino');
+        }
+
+        function connectBtnClick() {
+            if (!port.opened()) {
+                port.open('MicroPython', 115200);
+            } else {
+                port.close();
+            }
+        }
+
+        function sendHelloClick() {
+            port.write("Hello from p5.js\n");
+        }
+
+        function sendDataToDatabase() {
+            let data = select('#text-field').value();
+            select('#text-field').value('');
+        }
+        
+    </script>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+        import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-functions.js";
+        import { getDatabase, serverTimestamp, push, ref, onValue, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBjUEw_DQNMQsZJWfTtLL0PQJoH-xF0kk",
+            authDomain: "sta-cs5041.firebaseapp.com",
+            databaseURL: "https://sta-cs5041-p3.firebaseio.com",
+            projectId: "sta-cs5041",
+            storageBucket: "sta-cs5041.appspot.com",
+            messagingSenderId: "639987847762",
+            appId: "1:639987847762:web:1d86691716f6fb5443458b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const functions = getFunctions(app);
+        const database = getDatabase(app);
+        let user;
+        let estimatedGalleryHeight = 2200;
+
+        function addQuizTitle() {
+            let quizTitle = document.createElement('h2'); 
+            quizTitle.innerHTML = 'Example Quiz Setup';
+            quizTitle.style.position = 'absolute';
+            quizTitle.style.left = '30px';
+            quizTitle.style.top = estimatedGalleryHeight + 'px'; 
+            quizTitle.style.width = '100%';
+            quizTitle.style.textAlign = 'center';
+            document.body.appendChild(quizTitle);
+        }
+        addQuizTitle();
+
+        function addQuestionInput(groupId, posY) {
+            let questionField = document.createElement('input');
+            questionField.style.position = 'absolute';
+            questionField.style.left = '30px';
+            questionField.style.top = (posY + estimatedGalleryHeight) + 'px';
+            questionField.style.width = '260px';
+            questionField.id = 'question-field-' + groupId;
+            document.body.appendChild(questionField);
+
+            let checkAnswerButton = document.createElement('button');
+            checkAnswerButton.innerHTML = 'Check answer';
+            checkAnswerButton.style.position = 'absolute';
+            checkAnswerButton.style.left = '300px';
+            checkAnswerButton.style.top = (posY + estimatedGalleryHeight) + 'px';
+            checkAnswerButton.onclick = () => checkAnswer(groupId);
+            document.body.appendChild(checkAnswerButton);
+
+            let tipButton = document.createElement('button');
+            tipButton.innerHTML = 'Hint';
+            tipButton.style.position = 'absolute';
+            tipButton.style.left = '400px';
+            tipButton.style.top = (posY + estimatedGalleryHeight) + 'px';
+            tipButton.onclick = () => sendTip(groupId);
+            document.body.appendChild(tipButton);
+        }
+        function sendTip(groupId) {
+            // Mapping groupId to OLED display groupId
+            const oledGroupId = groupId - 6; 
+            const tipMessage = `Art gallery curator to Insert tip here for question ${groupId - 35}`;
+            sendOledMessage(oledGroupId, tipMessage);
+        }
+
+        function sendOledMessage(oledGroupId, message) {
+            push(ref(database, "data"), {
+                userId: user.uid,
+                groupId: oledGroupId,
+                timestamp: serverTimestamp(),
+                type: "string",
+                string: message
+            }).then(() => {
+                console.log(`Tip sent to OLED ${oledGroupId}`);
+            }).catch((error) => {
+                console.error("Error sending tip to OLED", error);
+            });
+        }
+
+        addQuestionInput(36,130); // light 1 
+        addQuestionInput(37, 170); // light 2
+        addQuestionInput(38, 210); // light 3
+        addQuestionInput(39, 250); // light 4 
+        addQuestionInput(40, 290); // light 5 
+        addQuestionInput(41, 330); // light 6 
+        
+        function sendLightColor(groupId, colorJson) {
+            push(ref(database, "data"), {
+                userId: user.uid, 
+                groupId: groupId,
+                timestamp: serverTimestamp(),
+                type: "string",
+                string: colorJson
+            }).then(() => {
+                console.log(`Light command sent for groupId: ${groupId}`);
+            }).catch((error) => {
+                console.error("Error sending light command", error);
+            });
+        }
+
+
+        function onButtonPress(groupId) {
+        let message = "";
+        switch (groupId) {
+            case 13:
+                message = "Description for Art Piece 1.";
+                break;
+            case 14:
+                message = "Description for Art Piece 2.";
+                break;
+            case 15:
+                message = "Description for Art Piece 3.";
+                break;
+            case 16:
+                message = "Description for Art Piece 4.";
+                break;
+            case 17:
+                message = "Description for Art Piece 5.";
+                break;
+            case 18:
+                message = "Description for Art Piece 6.";
+                break;
+            case 19:
+                message = "Description for Art Piece 7.";
+                break;
+            default:
+                message = "Unknown button pressed.";
+        }
+
+        let utterance = new SpeechSynthesisUtterance(message);
+        speechSynthesis.speak(utterance);
+    }
+
+    function setupButtonListeners() {
+    const buttonGroupIds = [13, 14, 15, 16, 17, 18, 19];
+    buttonGroupIds.forEach(groupId => {
+        onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(groupId)), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const latestEntry = Object.values(data).pop();
+                if (latestEntry.type === 'number') {
+                    console.log(`Button press detected for groupId: ${groupId}, Press Type: ${latestEntry.number}`);
+                    handleButtonPress(groupId, latestEntry.number);
+                }
+            }
+        });
+    });
+}
+
+
+        function checkAnswer(groupId) {
+            let colorJson = JSON.stringify({
+                red: 0,
+                green: 255,
+                blue: 0,
+                brightness: 255
+            });
+            sendLightColor(groupId, colorJson);
+        }
+
+        function checkDatabaseConnection() {
+            const testRef = ref(database, 'testConnection');
+            get(testRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    console.log('Connected to Firebase database successfully.');
+                } else {
+                    console.log('Firebase database connection test passed, but no data found at test location.');
+                }
+            }).catch((error) => {
+                console.error('Error testing connection to Firebase database:', error);
+            });
+        }
+        function playArtistExplanation(pieceNumber) {
+            port.write('Play Explanation for Art Piece ${artPieceNumber}/n');
+        }
+
+        const firebasetoken = "be6135d6-bcf7-4e71-a4cd-26f944d0256e";
+        (async () => {
+            const getToken = httpsCallable(functions, "getToken");
+            const tokenResponse = await getToken({ token: firebasetoken });
+            if (tokenResponse?.data?.result === "ok" && tokenResponse?.data?.token) {
+                user = await signInWithCustomToken(auth, tokenResponse.data.token).then((userCredential) => userCredential.user);
+
+                checkDatabaseConnection();
+
+                onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(31), limitToLast(50)), (snapshot) => {
+                    const data = snapshot.val();
+                    textData = Object.values(data ?? {}).map(el => el?.string?.toString() ?? '');
+                    console.log(textData);
+                });
+
+                const inputField = document.getElementById('text-field');
+                const buttonField = document.getElementById('submit-button');
+                buttonField.addEventListener('click', () => {
+                    push(ref(database, "data"), {
+                        userId: user.uid, 
+                        groupId: 31,
+                        timestamp: serverTimestamp(),
+                        type: "string",
+                        string: inputField.value.toString()
+                    });
+                });
+                inputField.removeAttribute('disabled');
+                buttonField.removeAttribute('disabled');
+            } else {
+                console.error(tokenResponse?.data?.reason ?? "unknownError");
+            }
+            if (user) {
+                setupButtonListeners();
+            }
+        })();
+    </script>
+</body>
+</html>
